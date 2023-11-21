@@ -8,7 +8,7 @@ import tkinter.simpledialog as sd
 from tkinter.simpledialog import askstring
 
 # Connecting to Database
-connector = sqlite3.connect('library11.db')
+connector = sqlite3.connect('library11.sqlite')
 cursor = connector.cursor()
 
 
@@ -249,9 +249,10 @@ def update_record():
     bk_id_entry.config(state='disable')
     clear.config(state='disable')
 
-    edit = Button(left_frame, text='Update Record', font=btn_font, bg=btn_hlb_bg, width=20, command=update)
-    edit.place(x=20, y=785)
-
+    # edit = Button(left_frame, text='Update Record', font=btn_font, bg=btn_hlb_bg, width=20, command=update)
+    # edit.place(x=20, y=785)
+    edit = Button(left_frame, text='Update Record', font=btn_font, bg=btn_hlb_bg, width=20, command=add_record)
+    edit.grid(row=19, column=0, padx=(10, 5), pady=15)
 
 def remove_record():
     global tree, connector
@@ -374,7 +375,6 @@ def change_availability():
             if surety:
                 connector.execute('UPDATE BookDetails SET BK_STATUS=? WHERE BK_ID=?', ('Available', BK_id))
                 connector.execute('UPDATE Transactions SET CARD_ID=? WHERE BK_ID=?', ('N/A', BK_id))
-                # connector.execute('UPDATE BookInventory SET Number_of_Copies=Number_of_Copies+1 WHERE BK_ID=?', (BK_id,))
                 connector.commit()
             else:
                 mb.showinfo('Cannot be returned', 'The book status cannot be set to Available unless it has been returned')
@@ -383,7 +383,6 @@ def change_availability():
             new_card_id = issuer_card()  # Assuming this function retrieves a new card ID
             connector.execute('UPDATE BookDetails SET BK_STATUS=? WHERE BK_ID=?', ('Issued', BK_id))
             connector.execute('UPDATE Transactions SET CARD_ID=? WHERE BK_ID=?', (new_card_id, BK_id))
-            # connector.execute('UPDATE BookInventory SET Number_of_Copies=Number_of_Copies-1 WHERE BK_ID=?', (BK_id,))
             connector.commit()
 
         clear_and_display()
@@ -391,9 +390,6 @@ def change_availability():
     except sqlite3.Error as e:
         print("Error updating availability:", e)
 
-def exit_fullscreen():
-    root.attributes('-fullscreen', False)
-    root.destroy()
 
 
 # Variables
@@ -408,8 +404,6 @@ btn_font = ('Gill Sans MT', 13)
 
 root = Tk()
 root.title('Library Management System')
-root.attributes('-fullscreen', True)
-
 screen_width = root.winfo_screenwidth()
 screen_height = root.winfo_screenheight()
 
@@ -449,84 +443,87 @@ RT_frame.place(relx=0.3, y=30, relheight=0.2, relwidth=0.7)
 RB_frame = Frame(root)
 RB_frame.place(relx=0.3, rely=0.24, relheight=0.785, relwidth=0.7)
 
-# Labels and Entry widgets for all fields
-Label(left_frame, text='Book Name', bg=lf_bg, font=lbl_font).place(x=20, y=25)
-Entry(left_frame, width=25, font=entry_font, textvariable=bk_name).place(x=145, y=25)
 
-Label(left_frame, text='Book ID', bg=lf_bg, font=lbl_font).place(x=20, y=65)
-bk_id_entry = Entry(left_frame, width=25, font=entry_font, textvariable=bk_id)
-bk_id_entry.place(x=145, y=65)
+Label(left_frame, text='Book Name', bg=lf_bg, font=lbl_font).grid(row=0, column=0, sticky='w', padx=10, pady=5)
+Entry(left_frame, width=25, font=entry_font, textvariable=bk_name).grid(row=0, column=1, padx=10, pady=5)
 
-Label(left_frame, text='Author Name', bg=lf_bg, font=lbl_font).place(x=20, y=105)
-Entry(left_frame, width=25, font=entry_font, textvariable=author_name).place(x=145, y=105)
+Label(left_frame, text='Book ID', bg=lf_bg, font=lbl_font).grid(row=1, column=0, sticky='w', padx=10, pady=5)
+bk_id_entry =Entry(left_frame, width=25, font=entry_font, textvariable=bk_id)
+bk_id_entry.grid(row=1, column=1, padx=10, pady=5)
 
-Label(left_frame, text='Status', bg=lf_bg, font=lbl_font).place(x=20, y=145)
-dd = OptionMenu(left_frame, bk_status, *['Available', 'Issued'])
-dd.configure(font=entry_font, width=12)
-dd.place(x=145, y=145)
+Label(left_frame, text='Author Name', bg=lf_bg, font=lbl_font).grid(row=2, column=0, sticky='w', padx=10, pady=5)
+Entry(left_frame, width=25, font=entry_font, textvariable=author_name).grid(row=2, column=1, padx=10, pady=5)
 
-Label(left_frame, text='Category', bg=lf_bg, font=lbl_font).place(x=20, y=185)
-Entry(left_frame, width=25, font=entry_font, textvariable=category).place(x=145, y=185)
+Label(left_frame, text='Status', bg=lf_bg, font=lbl_font).grid(row=3, column=0, sticky='w', padx=10, pady=5)
+status_options = ['Available', 'Issued']
+bk_status.set(status_options[0])  # Set default value
+status_dropdown = OptionMenu(left_frame, bk_status, *status_options)
+status_dropdown.configure(font=entry_font, width=12)
+status_dropdown.grid(row=3, column=1, padx=10, pady=5)
 
-Label(left_frame, text='Asset Code', bg=lf_bg, font=lbl_font).place(x=20, y=225)
-Entry(left_frame, width=25, font=entry_font, textvariable=asset_code).place(x=145, y=225)
+Label(left_frame, text='Category', bg=lf_bg, font=lbl_font).grid(row=4, column=0, sticky='w', padx=10, pady=5)
+Entry(left_frame, width=25, font=entry_font, textvariable=category).grid(row=4, column=1, padx=10, pady=5)
 
-Label(left_frame, text='Department', bg=lf_bg, font=lbl_font).place(x=20, y=265)
-Entry(left_frame, width=25, font=entry_font, textvariable=department).place(x=145, y=265)
+Label(left_frame, text='Asset Code', bg=lf_bg, font=lbl_font).grid(row=5, column=0, sticky='w', padx=10, pady=5)
+Entry(left_frame, width=25, font=entry_font, textvariable=asset_code).grid(row=5, column=1, padx=10, pady=5)
 
-Label(left_frame, text='Subject', bg=lf_bg, font=lbl_font).place(x=20, y=305)
-Entry(left_frame, width=25, font=entry_font, textvariable=subject).place(x=145, y=305)
+Label(left_frame, text='Department', bg=lf_bg, font=lbl_font).grid(row=6, column=0, sticky='w', padx=10, pady=5)
+Entry(left_frame, width=25, font=entry_font, textvariable=department).grid(row=6, column=1, padx=10, pady=5)
 
-Label(left_frame, text='Edition', bg=lf_bg, font=lbl_font).place(x=20, y=345)
-Entry(left_frame, width=25, font=entry_font, textvariable=edition).place(x=145, y=345)
+Label(left_frame, text='Subject', bg=lf_bg, font=lbl_font).grid(row=7, column=0, sticky='w', padx=10, pady=5)
+Entry(left_frame, width=25, font=entry_font, textvariable=subject).grid(row=7, column=1, padx=10, pady=5)
 
-Label(left_frame, text='Date Year', bg=lf_bg, font=lbl_font).place(x=20, y=385)
-Entry(left_frame, width=25, font=entry_font, textvariable=date_year).place(x=145, y=385)
+Label(left_frame, text='Edition', bg=lf_bg, font=lbl_font).grid(row=8, column=0, sticky='w', padx=10, pady=5)
+Entry(left_frame, width=25, font=entry_font, textvariable=edition).grid(row=8, column=1, padx=10, pady=5)
 
-Label(left_frame, text='Call No', bg=lf_bg, font=lbl_font).place(x=20, y=425)
-Entry(left_frame, width=25, font=entry_font, textvariable=call_No).place(x=145, y=425)
+Label(left_frame, text='Date Year', bg=lf_bg, font=lbl_font).grid(row=9, column=0, sticky='w', padx=10, pady=5)
+Entry(left_frame, width=25, font=entry_font, textvariable=date_year).grid(row=9, column=1, padx=10, pady=5)
 
-Label(left_frame, text='Publisher', bg=lf_bg, font=lbl_font).place(x=20, y=465)
-Entry(left_frame, width=25, font=entry_font, textvariable=publisher).place(x=145, y=465)
+Label(left_frame, text='Call No', bg=lf_bg, font=lbl_font).grid(row=10, column=0, sticky='w', padx=10, pady=5)
+Entry(left_frame, width=25, font=entry_font, textvariable=call_No).grid(row=10, column=1, padx=10, pady=5)
 
-Label(left_frame, text='Place', bg=lf_bg, font=lbl_font).place(x=20, y=505)
-Entry(left_frame, width=25, font=entry_font, textvariable=place).place(x=145, y=505)
+Label(left_frame, text='Publisher', bg=lf_bg, font=lbl_font).grid(row=11, column=0, sticky='w', padx=10, pady=5)
+Entry(left_frame, width=25, font=entry_font, textvariable=publisher).grid(row=11, column=1, padx=10, pady=5)
 
-Label(left_frame, text='ISBN', bg=lf_bg, font=lbl_font).place(x=20, y=545)
-Entry(left_frame, width=25, font=entry_font, textvariable=isbn).place(x=145, y=545)
+Label(left_frame, text='Place', bg=lf_bg, font=lbl_font).grid(row=12, column=0, sticky='w', padx=10, pady=5)
+Entry(left_frame, width=25, font=entry_font, textvariable=place).grid(row=12, column=1, padx=10, pady=5)
 
-Label(left_frame, text='Price', bg=lf_bg, font=lbl_font).place(x=20, y=585)
-Entry(left_frame, width=25, font=entry_font, textvariable=price).place(x=145, y=585)
+Label(left_frame, text='ISBN', bg=lf_bg, font=lbl_font).grid(row=13, column=0, sticky='w', padx=10, pady=5)
+Entry(left_frame, width=25, font=entry_font, textvariable=isbn).grid(row=13, column=1, padx=10, pady=5)
 
-Label(left_frame, text='Bill Date', bg=lf_bg, font=lbl_font).place(x=20, y=625)
-Entry(left_frame, width=25, font=entry_font, textvariable=bill_date).place(x=145, y=625)
+Label(left_frame, text='Price', bg=lf_bg, font=lbl_font).grid(row=14, column=0, sticky='w', padx=10, pady=5)
+Entry(left_frame, width=25, font=entry_font, textvariable=price).grid(row=14, column=1, padx=10, pady=5)
 
-Label(left_frame, text='Vendor', bg=lf_bg, font=lbl_font).place(x=20, y=665)
-Entry(left_frame, width=25, font=entry_font, textvariable=vendor).place(x=145, y=665)
+Label(left_frame, text='Bill Date', bg=lf_bg, font=lbl_font).grid(row=15, column=0, sticky='w', padx=10, pady=5)
+Entry(left_frame, width=25, font=entry_font, textvariable=bill_date).grid(row=15, column=1, padx=10, pady=5)
 
-Label(left_frame, text='Pages', bg=lf_bg, font=lbl_font).place(x=20, y=705)
-Entry(left_frame, width=25, font=entry_font, textvariable=pages).place(x=145, y=705)
+Label(left_frame, text='Vendor', bg=lf_bg, font=lbl_font).grid(row=16, column=0, sticky='w', padx=10, pady=5)
+Entry(left_frame, width=25, font=entry_font, textvariable=vendor).grid(row=16, column=1, padx=10, pady=5)
 
-Label(left_frame, text='Copies', bg=lf_bg, font=lbl_font).place(x=20, y=745)
-Entry(left_frame, width=25, font=entry_font, textvariable=number_of_copies).place(x=145, y=745)
+Label(left_frame, text='Pages', bg=lf_bg, font=lbl_font).grid(row=17, column=0, sticky='w', padx=10, pady=5)
+Entry(left_frame, width=25, font=entry_font, textvariable=pages).grid(row=17, column=1, padx=10, pady=5)
+
+Label(left_frame, text='Copies', bg=lf_bg, font=lbl_font).grid(row=18, column=0, sticky='w', padx=10, pady=5)
+Entry(left_frame, width=25, font=entry_font, textvariable=number_of_copies).grid(row=18, column=1, padx=10, pady=5)
+
 
 submit = Button(left_frame, text='Add new record', font=btn_font, bg=btn_hlb_bg, width=20, command=add_record)
-submit.place(x=20, y=785)
+submit.grid(row=19, column=0, padx=(10, 5), pady=15)  # Adjust padx for left side spacing
 
 clear = Button(left_frame, text='Clear fields', font=btn_font, bg=btn_hlb_bg, width=20, command=clear_fields)
-clear.place(x=230, y=785)
+clear.grid(row=19, column=1, padx=(5, 10), pady=15)  # Adjust padx for right side spacing
+
+
+# Labels and Entry widgets for all fields
+
 
 # Right Top Frame
-Button(RT_frame, text='Delete book record', font=btn_font, bg=btn_hlb_bg, width=17, command=remove_record).place(x=20, y=110)
-Button(RT_frame, text='Delete full inventory', font=btn_font, bg=btn_hlb_bg, width=17, command=delete_inventory).place(x=220, y=110)
-Button(RT_frame, text='Update book details', font=btn_font, bg=btn_hlb_bg, width=17,
-       command=update_record).place(x=420, y=110)
-Button(RT_frame, text='Change Book Availability', font=btn_font, bg=btn_hlb_bg, width=19,
-       command=change_availability).place(x=620, y=110)
-Button(RT_frame, text='Search', font=btn_font, bg=btn_hlb_bg, width=10, command=open_search_dialog).place(x=840, y=110)
-Button(RT_frame, text='Reload', font=btn_font, bg=btn_hlb_bg, width=10, command=display_records).place(x=980, y=110)
-close_button = Button(RT_frame, text='X', command=exit_fullscreen, bg='red', fg='white')
-close_button.place(x=1050, y=10)
+Button(RT_frame, text='Delete book record', font=btn_font, bg=btn_hlb_bg, width=17, command=remove_record).grid(row=10, column=0, padx=10, pady=100)
+Button(RT_frame, text='Delete full inventory', font=btn_font, bg=btn_hlb_bg, width=17, command=delete_inventory).grid(row=10, column=1, padx=10, pady=100)
+Button(RT_frame, text='Update book detail', font=btn_font, bg=btn_hlb_bg, width=17, command=update_record).grid(row=10, column=2, padx=10, pady=100)
+Button(RT_frame, text='Change Book Availability', font=btn_font, bg=btn_hlb_bg, width=19, command=change_availability).grid(row=10, column=3, padx=10, pady=100)
+Button(RT_frame, text='Search', font=btn_font, bg=btn_hlb_bg, width=15, command=open_search_dialog).grid(row=10, column=4, padx=10, pady=100)
+Button(RT_frame, text='Reload', font=btn_font, bg=btn_hlb_bg, width=15, command=display_records).grid(row=10, column=5, padx=10, pady=100)
 
 # Right Bottom Frame
 Label(RB_frame, text='BOOK INVENTORY', bg=rbf_bg, font=("Noto Sans CJK TC", 15, 'bold')).pack(side=TOP, fill=X)
@@ -562,7 +559,7 @@ tree.heading('Price', text='Price', anchor=CENTER)
 tree.heading('Bill_Date', text='Bill Date', anchor=CENTER)
 tree.heading('Vendor', text='Vendor', anchor=CENTER)
 tree.heading('Pages', text='Pages', anchor=CENTER)
-tree.heading('Number_of_Copies', text='Number_of_Copies', anchor=CENTER)
+tree.heading('Number_of_Copies', text='Number of Copies', anchor=CENTER)
 
 
 tree.column('#0', width=0, stretch=NO)
